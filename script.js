@@ -392,6 +392,19 @@ function showResult() {
             }
         });
     });
+    
+    // Add confetti effect
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#FF9D5C', '#FFB997', '#FF7F50'],
+        angle: 90,
+        startVelocity: 30,
+        gravity: 0.5,
+        shapes: ['circle', 'square'],
+        ticks: 200
+    });
 }
 
 function determineResult() {
@@ -422,13 +435,52 @@ async function shareResult() {
         // Create a temporary container for the screenshot
         const container = document.createElement('div');
         container.className = 'result-screenshot';
-        container.innerHTML = `
-            <h2>My NTU Cat Personality</h2>
-            <img src="${document.getElementById('result-image').src}" alt="Cat Match">
-            <h3>${document.getElementById('result-name').textContent}</h3>
-            <p>${document.getElementById('result-location').textContent}</p>
-            <p>${document.getElementById('result-description').textContent}</p>
-            <div class="screenshot-footer">
+        container.style.cssText = `
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 40px;
+            border-radius: 20px;
+            color: white;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        `;
+        
+        // Add decorative elements
+        const decoration = document.createElement('div');
+        decoration.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('assets/paw-pattern.png');
+            opacity: 0.1;
+        `;
+        container.appendChild(decoration);
+        
+        container.innerHTML += `
+            <h2 style="font-size: 28px; margin-bottom: 20px;">My NTU Cat Personality</h2>
+            <div style="
+                background: white;
+                border-radius: 50%;
+                padding: 10px;
+                display: inline-block;
+                margin: 20px 0;
+            ">
+                <img src="${document.getElementById('result-image').src}" 
+                     alt="Cat Match"
+                     style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover;">
+            </div>
+            <h3 style="font-size: 24px; margin: 15px 0;">${document.getElementById('result-name').textContent}</h3>
+            <p style="font-style: italic; margin: 10px 0;">${document.getElementById('result-location').textContent}</p>
+            <p style="margin: 15px 0; line-height: 1.5;">${document.getElementById('result-description').textContent}</p>
+            <div style="
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid rgba(255,255,255,0.2);
+                font-size: 14px;
+            ">
                 <p>Take the quiz at: Which NTU Cat Are You?</p>
                 <p>Created by Friday Furries x CMN</p>
             </div>
