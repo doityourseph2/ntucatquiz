@@ -396,7 +396,7 @@ function showResult() {
     // Add confetti effect
     confetti({
         particleCount: 100,
-        spread: 70,
+        spread: 100,
         origin: { y: 0.6 },
         colors: ['#FF9D5C', '#FFB997', '#FF7F50'],
         angle: 90,
