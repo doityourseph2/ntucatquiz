@@ -1,0 +1,246 @@
+:root {
+    --primary: #FF9D5C;
+    --secondary: #FFB997;
+    --accent: #FF7F50;
+    --text: #2A3031;
+    --background: #FFF2D8;
+    --white: #FFFFFF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 242, 216, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.cat-loader {
+    width: 100px;
+    height: 100px;
+    background: url('assets/cat-loader.gif') no-repeat center center;
+    background-size: contain;
+    margin: 0 auto 20px;
+}
+
+#loading-text {
+    color: var(--text);
+    font-size: 1.2em;
+    margin-top: 20px;
+}
+
+/* Progress bar */
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background-color: var(--secondary);
+    border-radius: 5px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+#progress-fill {
+    height: 100%;
+    background-color: var(--primary);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.quiz-container {
+    background: var(--white);
+    max-width: 600px;
+    width: 100%;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin: 20px 0;
+    transition: transform 0.3s ease;
+}
+
+.header-image:hover {
+    transform: scale(1.02);
+}
+
+h1 {
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.start-button, .choice-button, .share-button, .restart-button, .cta-button {
+    background-color: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin: 10px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.start-button:hover, .choice-button:hover, .share-button:hover, .restart-button:hover, .cta-button:hover {
+    background-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.choice-button {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.choice-button:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--white);
+    border-radius: 50%;
+    transform: translateY(-50%) scale(0);
+    transition: transform 0.3s ease;
+}
+
+.choice-button:hover:before {
+    transform: translateY(-50%) scale(1);
+}
+
+.credits {
+    margin-top: 30px;
+    text-align: center;
+    color: var(--text);
+}
+
+.small {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+#question-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+#question-text {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.result-content {
+    text-align: center;
+    margin: 20px 0;
+}
+
+#result-image {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 20px auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+#result-image:hover {
+    transform: scale(1.05);
+}
+
+#result-location {
+    color: var(--accent);
+    font-style: italic;
+    margin: 10px 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.action-buttons button {
+    flex: 1;
+}
+
+.cta {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-slideIn {
+    animation: slideIn 0.5s ease forwards;
+}
+
+@media (max-width: 480px) {
+    .quiz-container {
+        padding: 20px;
+        border-radius: 15px;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+} 
