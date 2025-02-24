@@ -286,7 +286,15 @@ function hideLoading() {
 // Update progress bar
 function updateProgress() {
     const progress = (currentQuestion / questions.length) * 100;
-    document.getElementById('progress-fill').style.width = `${progress}%`;
+    const progressFill = document.getElementById('progress-fill');
+    const progressCat = document.getElementById('progress-cat');
+    
+    progressFill.style.width = `${progress}%`;
+    progressCat.style.left = `${progress}%`;
+    
+    // Update ARIA attributes
+    const progressBar = document.querySelector('.progress-bar');
+    progressBar.setAttribute('aria-valuenow', Math.round(progress));
 }
 
 // Initialize quiz with enhanced animations
@@ -363,10 +371,27 @@ function showResult() {
     const result = determineResult();
     playSound('purring');
     
+    // Add a fun bounce animation to the result image
+    const resultImage = document.getElementById('result-image');
+    resultImage.classList.add('animate__animated', 'animate__bounceIn');
+    
     document.getElementById('result-name').textContent = result.name;
     document.getElementById('result-location').textContent = result.location;
     document.getElementById('result-description').textContent = result.description;
-    document.getElementById('result-image').src = result.image;
+    resultImage.src = result.image;
+    resultImage.alt = `Picture of ${result.name}`; // Accessibility improvement
+    
+    // Add keyboard navigation for buttons
+    const actionButtons = document.querySelectorAll('.action-buttons button');
+    actionButtons.forEach(button => {
+        button.setAttribute('tabindex', '0');
+        button.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                button.click();
+            }
+        });
+    });
 }
 
 function determineResult() {

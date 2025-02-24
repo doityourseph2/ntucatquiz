@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Add html2canvas for screenshots -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Add these font imports in the head section -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Audio elements -->
@@ -37,8 +41,9 @@
         </div>
 
         <div class="quiz-page" id="quiz-page" style="display: none;">
-            <div class="progress-bar">
+            <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                 <div id="progress-fill"></div>
+                <span id="progress-cat" aria-hidden="true">🐈</span>
             </div>
             <div id="question-container" class="animate__animated animate__fadeIn">
                 <p id="question-text"></p>
@@ -60,7 +65,13 @@
             </div>
             <div class="cta animate__animated animate__fadeIn animate__delay-3s">
                 <p>Want to meet your cat match in person? Join CMN!</p>
-                <a href="#" class="cta-button">Learn More About CMN</a>
+                <a href="https://www.instagram.com/ntucmn/" 
+                   class="cta-button"
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   aria-label="Learn More About Cat Management Network on Instagram">
+                    Learn More About CMN
+                </a>
             </div>
         </div>
     </div>
