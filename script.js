@@ -379,7 +379,7 @@ function showResult() {
     document.getElementById('result-location').textContent = result.location;
     document.getElementById('result-description').textContent = result.description;
     resultImage.src = result.image;
-    resultImage.alt = `Picture of ${result.name}`; // Accessibility improvement
+    resultImage.alt = `Picture of ${result.name}`;
     
     // Add keyboard navigation for buttons
     const actionButtons = document.querySelectorAll('.action-buttons button');
@@ -396,7 +396,7 @@ function showResult() {
     // Add confetti effect
     confetti({
         particleCount: 100,
-        spread: 100,
+        spread: 70,
         origin: { y: 0.6 },
         colors: ['#FF9D5C', '#FFB997', '#FF7F50'],
         angle: 90,
@@ -405,6 +405,9 @@ function showResult() {
         shapes: ['circle', 'square'],
         ticks: 200
     });
+    
+    // Update and display statistics
+    updateQuizStatistics(result);
 }
 
 function determineResult() {
@@ -526,4 +529,110 @@ function restartQuiz() {
     // Show start page
     document.getElementById('result-page').style.display = 'none';
     document.getElementById('start-page').style.display = 'block';
+}
+
+// Statistics and Firebase Integration
+async function updateQuizStatistics(result) {
+    try {
+        // Update total count for this result
+        const resultRef = database.ref(`results/${result.name.replace(/[/.]/g, '_')}`);
+        await resultRef.transaction(current => (current || 0) + 1);
+        
+        // Update timestamp for latest statistics
+        await database.ref('lastUpdated').set(firebase.database.ServerValue.TIMESTAMP);
+        
+        // Fetch and display statistics
+        await displayStatistics(result);
+    } catch (error) {
+        console.error('Error updating statistics:', error);
+    }
+}
+
+async function displayStatistics(currentResult) {
+    const statsContainer = document.getElementById('stats-container');
+    
+    try {
+        // Fetch all results
+        const snapshot = await database.ref('results').once('value');
+        const results = snapshot.val() || {};
+        
+        // Calculate total responses
+        const totalResponses = Object.values(results).reduce((a, b) => a + b, 0);
+        
+        // Find most common result
+        const mostCommon = Object.entries(results)
+            .sort((a, b) => b[1] - a[1])[0];
+        
+        // Calculate percentage of people with same result
+        const sameResultCount = results[currentResult.name.replace(/[/.]/g, '_')] || 1;
+        const sameResultPercentage = ((sameResultCount / totalResponses) * 100).toFixed(1);
+
+        statsContainer.innerHTML = `
+            <div class="stats-grid">
+                <div class="stats-header">
+                    <h3>Quiz Statistics</h3>
+                    <p class="small">Based on ${totalResponses} responses</p>
+                </div>
+                
+                <div class="stats-grid-container">
+                    <div class="stats-item">
+                        <h4>Your Cat Twin Club</h4>
+                        <p class="stats-number">${sameResultPercentage}%</p>
+                        <p class="stats-desc">of quiz takers share your personality type</p>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <h4>Most Popular Cat</h4>
+                        <p class="stats-number">${mostCommon[0].replace(/_/g, ' ')}</p>
+                        <p class="stats-desc">${mostCommon[1]} responses</p>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <h4>Fun Fact</h4>
+                        <p class="stats-desc">${getFunFact(currentResult)}</p>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <h4>Cat Compatibility</h4>
+                        <p class="stats-desc">${getCompatibility(currentResult)}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error displaying statistics:', error);
+        statsContainer.innerHTML = '<p>Statistics temporarily unavailable</p>';
+    }
+}
+
+function getFunFact(result) {
+    const facts = {
+        'The Canteen King/Queen': 'Did you know? The most successful food court cats can recognize over 20 different regular students!',
+        'The Library Scholar': 'Library cats have been observed following the same study schedules as students during exam periods!',
+        'The Hall Patroller': 'Hall cats have been known to escort students back to their rooms late at night!',
+        'The Adventure Seeker': 'ADM cats are often spotted in student art projects and installations!',
+        'The Sports Star': 'The Wave\'s resident cats sometimes join morning yoga sessions!',
+        'The Garden Guardian': 'These cats help maintain the garden by keeping pests away!',
+        'The Engineering Expert': 'Engineering cats have mastered the automatic doors\' sensors!',
+        'The Business Tycoon': 'Business School cats are often seen networking at student events!',
+        'The Arts Critic': 'These cats have been known to attend outdoor performances!',
+        'The Dorm Philosopher': 'Graduate hall cats often attend thesis defense practices!'
+    };
+    return facts[result.name] || 'NTU cats have been part of campus life for over 30 years!';
+}
+
+function getCompatibility(result) {
+    const compatibility = {
+        'The Canteen King/Queen': 'Best friends with The Hall Patroller - they share food territory!',
+        'The Library Scholar': 'Often seen with The Garden Guardian during quiet hours.',
+        'The Hall Patroller': 'Partners with The Canteen King/Queen for optimal snack opportunities!',
+        'The Adventure Seeker': 'Frequently explores with The Sports Star!',
+        'The Sports Star': 'Teams up with The Adventure Seeker for campus adventures!',
+        'The Garden Guardian': 'Meditates with The Library Scholar during peaceful afternoons.',
+        'The Engineering Expert': 'Collaborates with The Business Tycoon on strategic planning!',
+        'The Business Tycoon': 'Networks with The Engineering Expert for innovative solutions!',
+        'The Arts Critic': 'Creates masterpieces with The Adventure Seeker!',
+        'The Dorm Philosopher': 'Shares wisdom with The Library Scholar!'
+    };
+    return compatibility[result.name] || 'Gets along well with all campus cats!';
 } 

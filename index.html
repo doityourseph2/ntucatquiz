@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <!-- Add html2canvas for screenshots -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <!-- Add these font imports in the head section -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +36,8 @@
     <div class="quiz-container">
         <div class="start-page" id="start-page">
             <h1 class="animate__animated animate__bounceIn">Which NTU Cat Are You?</h1>
-            <img src="assets/header.jpg" alt="NTU Cats" class="header-image animate__animated animate__fadeIn">
+            <!-- Temporarily comment out until image is available -->
+            <!-- <img src="assets/header.jpg" alt="NTU Cats" class="header-image animate__animated animate__fadeIn"> -->
             <p class="animate__animated animate__fadeIn animate__delay-1s">Discover which of NTU's beloved campus cats matches your personality!</p>
             <button id="start-button" class="start-button animate__animated animate__pulse animate__infinite">Start Quiz</button>
             <div class="credits animate__animated animate__fadeIn animate__delay-2s">
@@ -66,6 +70,7 @@
                 <h3 id="result-name" class="animate__animated animate__fadeIn animate__delay-1s"></h3>
                 <p id="result-location" class="animate__animated animate__fadeIn animate__delay-1s"></p>
                 <p id="result-description" class="animate__animated animate__fadeIn animate__delay-2s"></p>
+                <div id="stats-container" class="animate__animated animate__fadeIn animate__delay-3s"></div>
             </div>
             <div class="action-buttons animate__animated animate__fadeIn animate__delay-3s">
                 <button onclick="shareResult()" class="share-button">Share Result</button>
@@ -83,6 +88,7 @@
             </div>
         </div>
     </div>
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html> 
