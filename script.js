@@ -406,8 +406,11 @@ function showResult() {
         ticks: 200
     });
     
-    // Update and display statistics
-    updateQuizStatistics(result);
+    // Find the matching real cat
+    const realCatMatch = findRealCatMatch(result.name);
+    
+    // Update and display statistics with real cat data
+    updateQuizStatistics(result, realCatMatch);
 }
 
 function determineResult() {
@@ -431,10 +434,334 @@ function determineResult() {
     return bestMatch;
 }
 
+// Find the matching real cat based on personality type
+function findRealCatMatch(personalityType) {
+    // Map personality types to real cats
+    const personalityToCatMap = {
+        "The Canteen King/Queen": "Dora",
+        "The Library Scholar": "Kuro",
+        "The Hall Patroller": "Smokey",
+        "The Adventure Seeker": "Mimi",
+        "The Sports Star": "Flynn", // This was incorrectly mapped - Flynn is the Sports Star
+        "The Garden Guardian": "Albus",
+        "The Engineering Expert": "Boots",
+        "The Business Tycoon": "Simba",
+        "The Arts Critic": "Bast",
+        "The Dorm Philosopher": "Bandit"
+    };
+    
+    const catName = personalityToCatMap[personalityType];
+    return catName && catData[catName] ? { name: catName, ...catData[catName] } : null;
+}
+
+// Update the statistics function to include real cat data
+async function updateQuizStatistics(result, realCatMatch) {
+    try {
+        // Update total count for this result
+        const resultRef = database.ref(`results/${result.name.replace(/[/.]/g, '_')}`);
+        await resultRef.transaction(current => (current || 0) + 1);
+        
+        // Update timestamp for latest statistics
+        await database.ref('lastUpdated').set(firebase.database.ServerValue.TIMESTAMP);
+        
+        // Fetch and display statistics with real cat data
+        await displayEnhancedStatistics(result, realCatMatch);
+    } catch (error) {
+        console.error('Error updating statistics:', error);
+        // Still try to display statistics with real cat data even if Firebase fails
+        displayEnhancedStatistics(result, realCatMatch);
+    }
+}
+
+// Enhanced statistics display with real cat data
+async function displayEnhancedStatistics(result, realCatMatch) {
+    const statsContainer = document.getElementById('stats-container');
+    
+    try {
+        // Fetch all results from Firebase
+        let results = {};
+        let totalResponses = 0;
+        let mostCommon = ["Unknown", 0];
+        let sameResultPercentage = "0.0";
+        
+        try {
+            const snapshot = await database.ref('results').once('value');
+            results = snapshot.val() || {};
+            
+            // Calculate total responses
+            totalResponses = Object.values(results).reduce((a, b) => a + b, 0);
+            
+            // Find most common result
+            mostCommon = Object.entries(results)
+                .sort((a, b) => b[1] - a[1])[0] || ["Unknown", 0];
+            
+            // Calculate percentage of people with same result
+            const sameResultCount = results[result.name.replace(/[/.]/g, '_')] || 1;
+            sameResultPercentage = ((sameResultCount / totalResponses) * 100).toFixed(1);
+        } catch (e) {
+            console.error('Error fetching Firebase data:', e);
+            // Continue with default values
+        }
+        
+        // Create base statistics HTML
+        let statsHTML = `
+            <div class="stats-grid">
+                <div class="stats-header">
+                    <h3>Quiz Statistics</h3>
+                    <p class="small">Based on ${totalResponses} responses</p>
+                </div>
+                
+                <div class="stats-grid-container">
+                    <div class="stats-item">
+                        <h4>Your Cat Twin Club</h4>
+                        <p class="stats-number">${sameResultPercentage}%</p>
+                        <div class="twin-club-visual">
+                            <div class="twin-club-bar" style="width: ${sameResultPercentage}%"></div>
+                        </div>
+                        <p class="stats-desc">of quiz takers share your personality type</p>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <h4>Most Popular Cat</h4>
+                        <p class="stats-number">${mostCommon[0].replace(/_/g, ' ')}</p>
+                        <div class="popular-cat-visual">
+                            <div class="popular-cat-icon">👑</div>
+                        </div>
+                        <p class="stats-desc">${mostCommon[1]} responses</p>
+                    </div>
+        `;
+        
+        // Add real cat data if available
+        if (realCatMatch) {
+            statsHTML += `
+                    <div class="stats-item real-cat-match">
+                        <h4>Your Real Cat Match</h4>
+                        <p class="stats-number">${realCatMatch.name}</p>
+                        <p class="stats-desc">You share personality traits with ${realCatMatch.name}, a real NTU campus cat!</p>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <h4>Cat Fun Fact</h4>
+                        <p class="stats-desc">${realCatMatch.funFact}</p>
+                    </div>
+                </div>
+                
+                <!-- Real Cat Details Section -->
+                <!--  <div class="real-cat-section">
+                    <h3>Meet Your Real Cat Match: ${realCatMatch.name}</h3>
+                    
+                    <div class="real-cat-info">
+                        <div class="info-item">
+                            <h4>Personality</h4>
+                            <p>${realCatMatch.personality}</p>
+                        </div>
+                    </div> -->
+                    
+                    <div class="real-cat-details">
+                        <div class="social-meter">
+                            <h4>Social Style</h4>
+                            ${generateSocialMeter(realCatMatch.socialStyle)}
+                        </div>
+                        
+                        <div class="mood-chart">
+                            <h4>Mood Distribution</h4>
+                            <div class="mood-bars">
+                                ${generateMoodBars(realCatMatch.moods)}
+                            </div>
+                        </div>
+                        
+                        <div class="location-map">
+                            <h4>Where to Find ${realCatMatch.name}</h4>
+                            ${generateLocationMap(realCatMatch.locations)}
+                        </div>
+                        
+                        <div class="activities">
+                            <h4>Common Activities</h4>
+                            <ul>
+                                ${realCatMatch.activities.map(activity => `<li>${activity}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Fallback if no real cat match
+            statsHTML += `
+                    <div class="stats-item">
+                        <h4>Fun Fact</h4>
+                        <p class="stats-desc">${getFunFact(result)}</p>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <h4>Cat Compatibility</h4>
+                        <p class="stats-desc">${getCompatibility(result)}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        statsHTML += `</div>`;
+        statsContainer.innerHTML = statsHTML;
+        
+        // Animate the mood bars after they're added to the DOM
+        setTimeout(() => {
+            const moodBars = document.querySelectorAll('.mood-bar-fill');
+            moodBars.forEach(bar => {
+                const width = bar.getAttribute('data-width');
+                bar.style.width = width + '%';
+            });
+            
+            const moodEmojis = document.querySelectorAll('.mood-emoji');
+            moodEmojis.forEach(emoji => {
+                const left = emoji.getAttribute('data-left');
+                emoji.style.left = left + '%';
+            });
+            
+            // Animate twin club bar
+            const twinClubBar = document.querySelector('.twin-club-bar');
+            if (twinClubBar) {
+                const width = twinClubBar.style.width;
+                twinClubBar.style.width = '0';
+                setTimeout(() => {
+                    twinClubBar.style.width = width;
+                }, 100);
+            }
+        }, 100);
+    } catch (error) {
+        console.error('Error displaying statistics:', error);
+        statsContainer.innerHTML = '<p>Statistics temporarily unavailable</p>';
+    }
+}
+
+// Generate mood bars for visualization with emojis
+function generateMoodBars(moods) {
+    if (!moods) return '<p>No mood data available</p>';
+    
+    const moodEmojis = {
+        'Happy': '😺',
+        'Hungry': '😋',
+        'Moody': '😾',
+        'Sleepy': '😴',
+        'Affectionate': '😻',
+        'No Thoughts': '😶',
+        'Hangry': '😾',
+        'Adventurous': '😼',
+        'Friendly': '😸',
+        'Neutral': '🐱'
+    };
+    
+    return Object.entries(moods)
+        .map(([mood, percentage]) => {
+            const emoji = moodEmojis[mood] || '🐱';
+            return `
+                <div class="mood-bar-container">
+                    <span class="mood-label">${mood}</span>
+                    <div class="mood-bar-bg">
+                        <div class="mood-bar-fill" data-width="${percentage}" style="width: 0%"></div>
+                        <span class="mood-emoji" data-left="${percentage}" style="left: 0%">${emoji}</span>
+                    </div>
+                    <span class="mood-percentage">${percentage}%</span>
+                </div>
+            `;
+        }).join('');
+}
+
+// Generate a visual location map
+function generateLocationMap(locations) {
+    if (!locations || !locations.length) return '<p>No location data available</p>';
+    
+    // Create a simple grid map
+    let mapHTML = `
+        <div class="map-container">
+            <div class="map-bg"></div>
+    `;
+    
+    // Place location points on the map
+    locations.forEach((location, index) => {
+        // Generate pseudo-random positions based on location name
+        const hash = hashString(location);
+        const x = 20 + (hash % 60); // 20-80% of width
+        const y = 20 + ((hash * 13) % 60); // 20-80% of height
+        
+        mapHTML += `
+            <div class="location-point" 
+                 style="left: ${x}%; top: ${y}%;" 
+                 data-name="${location}">
+            </div>
+        `;
+    });
+    
+    mapHTML += `</div>`;
+    return mapHTML;
+}
+
+// Generate a social meter visualization
+function generateSocialMeter(socialStyle) {
+    if (!socialStyle) return '<p>No social data available</p>';
+    
+    // Determine position on social scale (0-100)
+    let position = 50; // Default to middle (neutral)
+    
+    if (socialStyle.includes('ignores') || socialStyle.includes('skittish')) {
+        position = 10; // Shy
+    } else if (socialStyle.includes('observe') || socialStyle.includes('distance')) {
+        position = 30; // Reserved
+    } else if (socialStyle.includes('sometimes') || socialStyle.includes('depending')) {
+        position = 50; // Neutral
+    } else if (socialStyle.includes('approaches') || socialStyle.includes('interacts')) {
+        position = 70; // Friendly
+    } else if (socialStyle.includes('very social') || socialStyle.includes('lap') || socialStyle.includes('affectionate')) {
+        position = 90; // Very social
+    }
+    
+    // Get description based on position
+    let description = '';
+    if (position <= 20) {
+        description = 'Prefers to keep to themselves most of the time';
+    } else if (position <= 40) {
+        description = 'Observes from a distance before deciding to interact';
+    } else if (position <= 60) {
+        description = 'Balances independence with social interaction';
+    } else if (position <= 80) {
+        description = 'Generally friendly and approachable';
+    } else {
+        description = 'Very social and loves human interaction';
+    }
+    
+    return `
+        <div class="social-scale-labels">
+            <span>Shy</span>
+            <span> </span>
+            <span>Neutral</span>
+            <span> </span>
+            <span>Social</span>
+        </div>
+        <div class="social-scale">
+            <div class="social-scale-bar"></div>
+            <div class="social-marker" style="left: ${position}%"></div>
+        </div>
+        <p class="social-description">${description}</p>
+    `;
+}
+
+// Simple hash function for generating pseudo-random positions
+function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+}
+
 async function shareResult() {
     showLoading('Preparing your result to share...');
     
     try {
+        // Get the result and real cat match
+        const result = determineResult();
+        const realCatMatch = findRealCatMatch(result.name);
+        
         // Create a temporary container for the screenshot
         const container = document.createElement('div');
         container.className = 'result-screenshot';
@@ -447,6 +774,7 @@ async function shareResult() {
             text-align: center;
             position: relative;
             overflow: hidden;
+            font-family: "Quicksand", sans-serif;
         `;
         
         // Add decorative elements
@@ -457,27 +785,53 @@ async function shareResult() {
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('assets/paw-pattern.png');
-            opacity: 0.1;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><path d="M10,8 C8,6 8,4 10,2 C12,4 12,6 10,8 Z M10,8 C12,10 12,12 10,14 C8,12 8,10 10,8 Z M20,8 C18,6 18,4 20,2 C22,4 22,6 20,8 Z M20,8 C22,10 22,12 20,14 C18,12 18,10 20,8 Z M15,13 C13,11 13,9 15,7 C17,9 17,11 15,13 Z M15,13 C17,15 17,17 15,19 C13,17 13,15 15,13 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            opacity: 0.2;
         `;
         container.appendChild(decoration);
         
-        container.innerHTML += `
-            <h2 style="font-size: 28px; margin-bottom: 20px;">My NTU Cat Personality</h2>
+        // Add content
+        let contentHTML = `
+            <h2 style="font-size: 28px; margin-bottom: 20px; font-weight: 700;">My NTU Cat Personality</h2>
             <div style="
                 background: white;
                 border-radius: 50%;
                 padding: 10px;
                 display: inline-block;
                 margin: 20px 0;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             ">
                 <img src="${document.getElementById('result-image').src}" 
                      alt="Cat Match"
                      style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover;">
             </div>
-            <h3 style="font-size: 24px; margin: 15px 0;">${document.getElementById('result-name').textContent}</h3>
-            <p style="font-style: italic; margin: 10px 0;">${document.getElementById('result-location').textContent}</p>
-            <p style="margin: 15px 0; line-height: 1.5;">${document.getElementById('result-description').textContent}</p>
+            <h3 style="font-size: 24px; margin: 15px 0; font-weight: 700;">${result.name}</h3>
+            <p style="font-style: italic; margin: 10px 0;">${result.location}</p>
+            <p style="margin: 15px 0; line-height: 1.5;">${result.description}</p>
+        `;
+        
+        // Add real cat match if available
+        if (realCatMatch) {
+            contentHTML += `
+                <div style="
+                    margin-top: 30px;
+                    background: rgba(255,255,255,0.2);
+                    padding: 20px;
+                    border-radius: 15px;
+                ">
+                    <h3 style="font-size: 20px; margin-bottom: 15px;">My Real Cat Match: ${realCatMatch.name}</h3>
+                    <p style="margin: 10px 0; line-height: 1.5;">
+                        <strong>Find me at:</strong> ${realCatMatch.locations.join(', ')}
+                    </p>
+                    <p style="margin: 10px 0; line-height: 1.5;">
+                        <strong>Fun Fact:</strong> ${realCatMatch.funFact}
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Add footer
+        contentHTML += `
             <div style="
                 margin-top: 30px;
                 padding-top: 20px;
@@ -489,35 +843,50 @@ async function shareResult() {
             </div>
         `;
         
+        container.innerHTML += contentHTML;
+        
+        // Append to body temporarily (hidden)
+        container.style.position = 'absolute';
+        container.style.left = '-9999px';
         document.body.appendChild(container);
         
-        // Generate screenshot
-        const canvas = await html2canvas(container);
+        // Generate image
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            logging: false,
+            useCORS: true,
+            allowTaint: true
+        });
+        
+        // Remove temporary container
         document.body.removeChild(container);
         
         // Convert to blob
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         
-        // Share or download
-        if (navigator.share && navigator.canShare({ files: [new File([blob], 'ntu-cat-result.png', { type: 'image/png' })] })) {
+        // Share
+        if (navigator.share && navigator.canShare({ files: [new File([blob], 'ntu-cat-quiz-result.png', { type: 'image/png' })] })) {
             await navigator.share({
-                files: [new File([blob], 'ntu-cat-result.png', { type: 'image/png' })],
                 title: 'My NTU Cat Personality',
-                text: `I am ${document.getElementById('result-name').textContent}! Take the quiz to find your NTU cat match!`
+                text: `I am ${result.name}! Take the quiz to find your NTU cat match.`,
+                files: [new File([blob], 'ntu-cat-quiz-result.png', { type: 'image/png' })]
             });
         } else {
-            // Fallback to download
-            const link = document.createElement('a');
-            link.href = canvas.toDataURL('image/png');
-            link.download = 'ntu-cat-result.png';
-            link.click();
+            // Fallback for browsers that don't support sharing files
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ntu-cat-quiz-result.png';
+            a.click();
+            URL.revokeObjectURL(url);
         }
+        
+        hideLoading();
     } catch (error) {
-        console.error('Share failed:', error);
-        alert('Could not share result. Try downloading instead!');
+        console.error('Error sharing result:', error);
+        hideLoading();
+        alert('Sorry, there was an error sharing your result. Please try again.');
     }
-    
-    hideLoading();
 }
 
 function restartQuiz() {
@@ -529,80 +898,6 @@ function restartQuiz() {
     // Show start page
     document.getElementById('result-page').style.display = 'none';
     document.getElementById('start-page').style.display = 'block';
-}
-
-// Statistics and Firebase Integration
-async function updateQuizStatistics(result) {
-    try {
-        // Update total count for this result
-        const resultRef = database.ref(`results/${result.name.replace(/[/.]/g, '_')}`);
-        await resultRef.transaction(current => (current || 0) + 1);
-        
-        // Update timestamp for latest statistics
-        await database.ref('lastUpdated').set(firebase.database.ServerValue.TIMESTAMP);
-        
-        // Fetch and display statistics
-        await displayStatistics(result);
-    } catch (error) {
-        console.error('Error updating statistics:', error);
-    }
-}
-
-async function displayStatistics(currentResult) {
-    const statsContainer = document.getElementById('stats-container');
-    
-    try {
-        // Fetch all results
-        const snapshot = await database.ref('results').once('value');
-        const results = snapshot.val() || {};
-        
-        // Calculate total responses
-        const totalResponses = Object.values(results).reduce((a, b) => a + b, 0);
-        
-        // Find most common result
-        const mostCommon = Object.entries(results)
-            .sort((a, b) => b[1] - a[1])[0];
-        
-        // Calculate percentage of people with same result
-        const sameResultCount = results[currentResult.name.replace(/[/.]/g, '_')] || 1;
-        const sameResultPercentage = ((sameResultCount / totalResponses) * 100).toFixed(1);
-
-        statsContainer.innerHTML = `
-            <div class="stats-grid">
-                <div class="stats-header">
-                    <h3>Quiz Statistics</h3>
-                    <p class="small">Based on ${totalResponses} responses</p>
-                </div>
-                
-                <div class="stats-grid-container">
-                    <div class="stats-item">
-                        <h4>Your Cat Twin Club</h4>
-                        <p class="stats-number">${sameResultPercentage}%</p>
-                        <p class="stats-desc">of quiz takers share your personality type</p>
-                    </div>
-                    
-                    <div class="stats-item">
-                        <h4>Most Popular Cat</h4>
-                        <p class="stats-number">${mostCommon[0].replace(/_/g, ' ')}</p>
-                        <p class="stats-desc">${mostCommon[1]} responses</p>
-                    </div>
-                    
-                    <div class="stats-item">
-                        <h4>Fun Fact</h4>
-                        <p class="stats-desc">${getFunFact(currentResult)}</p>
-                    </div>
-                    
-                    <div class="stats-item">
-                        <h4>Cat Compatibility</h4>
-                        <p class="stats-desc">${getCompatibility(currentResult)}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    } catch (error) {
-        console.error('Error displaying statistics:', error);
-        statsContainer.innerHTML = '<p>Statistics temporarily unavailable</p>';
-    }
 }
 
 function getFunFact(result) {
