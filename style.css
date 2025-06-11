@@ -104,7 +104,7 @@ body {
 }
 
 .header-image {
-    width: 100%;
+    width: 120%;
     max-height: 300px;
     object-fit: cover;
     border-radius: 10px;

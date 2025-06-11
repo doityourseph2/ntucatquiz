@@ -14,53 +14,53 @@ const questions = [
         question: "How do you typically react when meeting new people?",
         choices: [
             { text: "Approach them confidently", scores: { sociability: 2, mood: 1 } },
-            { text: "Observe from a distance first", scores: { independence: 1, mood: 1 } },
+            { text: "Observe from a distance first", scores: { independence: 2, mood: 1 } },
             { text: "Prefer to keep to myself", scores: { independence: 2, sociability: -1 } },
-            { text: "It depends on my mood", scores: { mood: -1, sociability: 1 } }
+            { text: "It depends on my mood", scores: { mood: 2, sociability: 1 } }
         ]
     },
     {
         question: "What's your ideal way to spend free time?",
         choices: [
             { text: "Playing and being active", scores: { activity: 2, sociability: 1 } },
-            { text: "Relaxing in a quiet spot", scores: { activity: -1, independence: 1 } },
-            { text: "Exploring new places", scores: { activity: 1, independence: 2 } },
+            { text: "Relaxing in a quiet spot", scores: { mood: 2, independence: 1 } },
+            { text: "Exploring new places", scores: { curiosity: 2, independence: 1 } },
             { text: "Hanging out with friends", scores: { sociability: 2, mood: 1 } }
         ]
     },
     {
         question: "How do you prefer to eat your meals?",
         choices: [
-            { text: "With others, socially", scores: { sociability: 2, independence: -1 } },
-            { text: "Alone, at my own pace", scores: { independence: 2, sociability: -1 } },
-            { text: "Whenever I feel like it", scores: { independence: 1, mood: -1 } },
-            { text: "On a regular schedule", scores: { mood: 2, activity: -1 } }
+            { text: "With others, socially", scores: { sociability: 2, appetite: 2 } },
+            { text: "Alone, at my own pace", scores: { independence: 2, mood: 1 } },
+            { text: "Whenever I feel like it", scores: { independence: 1, mood: 2 } },
+            { text: "On a regular schedule", scores: { mood: 2, activity: 1 } }
         ]
     },
     {
         question: "What's your reaction when someone approaches you unexpectedly?",
         choices: [
-            { text: "Welcome them warmly", scores: { sociability: 2, mood: 1 } },
-            { text: "Stay cautious but curious", scores: { independence: 1, mood: 1 } },
+            { text: "Welcome them warmly", scores: { sociability: 2, mood: 2 } },
+            { text: "Stay cautious but curious", scores: { independence: 2, curiosity: 1 } },
             { text: "Quickly move away", scores: { independence: 2, sociability: -1 } },
-            { text: "Depends on how I'm feeling", scores: { mood: -1, activity: 1 } }
+            { text: "Depends on how I'm feeling", scores: { mood: 2, activity: 1 } }
         ]
     },
     {
         question: "How do you handle changes in your routine?",
         choices: [
-            { text: "Adapt easily and enjoy variety", scores: { activity: 2, mood: -1 } },
-            { text: "Prefer sticking to my habits", scores: { mood: 2, independence: 1 } },
-            { text: "Go with the flow", scores: { independence: 1, sociability: 1 } },
-            { text: "Get a bit stressed", scores: { mood: -1, activity: -1 } }
+            { text: "Adapt easily and enjoy variety", scores: { activity: 2, curiosity: 1 } },
+            { text: "Prefer sticking to my habits", scores: { mood: 2, independence: 2 } },
+            { text: "Go with the flow", scores: { sociability: 2, mood: 1 } },
+            { text: "Get a bit stressed", scores: { mood: 2, activity: -1 } }
         ]
     },
     {
         question: "It's lunchtime at North Spine! You spot some students eating chicken rice. What do you do?",
         choices: [
             { text: "Confidently walk up and give them your best pleading eyes", scores: { sociability: 2, appetite: 2 } },
-            { text: "Watch from a distance, planning the perfect moment to appear", scores: { independence: 1, curiosity: 1 } },
-            { text: "Ignore them - you're a sophisticated cat who doesn't beg", scores: { independence: 2, mood: 1 } },
+            { text: "Watch from a distance, planning the perfect moment to appear", scores: { independence: 2, curiosity: 1 } },
+            { text: "Ignore them - you're a sophisticated cat who doesn't beg", scores: { independence: 2, mood: 2 } },
             { text: "Start meowing dramatically to get attention", scores: { sociability: 2, appetite: 1 } }
         ]
     },
@@ -68,16 +68,16 @@ const questions = [
         question: "You discover a new cardboard box near the engineering building. What's your first reaction?",
         choices: [
             { text: "Immediately claim it as your new favorite spot", scores: { curiosity: 2, independence: 1 } },
-            { text: "Carefully inspect it from all angles before approaching", scores: { mood: 1, curiosity: 1 } },
-            { text: "Ignore it - you prefer your existing sleeping spots", scores: { mood: 2, independence: 1 } },
-            { text: "Push it around and play with it", scores: { activity: 2, curiosity: 1 } }
+            { text: "Carefully inspect it from all angles before approaching", scores: { mood: 2, curiosity: 1 } },
+            { text: "Ignore it - you prefer your existing sleeping spots", scores: { mood: 2, independence: 2 } },
+            { text: "Push it around and play with it", scores: { activity: 2, sociability: 1 } }
         ]
     },
     {
         question: "A student is trying to study in the library. You decide to...",
         choices: [
-            { text: "Sit on their textbook - it's prime napping real estate", scores: { sociability: 2, independence: 1 } },
-            { text: "Find a quiet corner nearby for your own study session", scores: { mood: 2, independence: 1 } },
+            { text: "Sit on their textbook - it's prime napping real estate", scores: { sociability: 2, mood: 1 } },
+            { text: "Find a quiet corner nearby for your own study session", scores: { mood: 2, independence: 2 } },
             { text: "Playfully swat at their pencil while they write", scores: { activity: 2, sociability: 1 } },
             { text: "Watch from your bookshelf throne", scores: { independence: 2, mood: 1 } }
         ]
@@ -85,18 +85,18 @@ const questions = [
     {
         question: "It's raining at NTU! Where do you take shelter?",
         choices: [
-            { text: "Under the nearest shelter with other cats", scores: { sociability: 2, mood: 1 } },
+            { text: "Under the nearest shelter with other cats", scores: { sociability: 2, mood: 2 } },
             { text: "Your secret hideout that only you know about", scores: { independence: 2, curiosity: 1 } },
-            { text: "The nearest building entrance until someone lets you in", scores: { sociability: 1, appetite: 1 } },
+            { text: "The nearest building entrance until someone lets you in", scores: { sociability: 2, appetite: 1 } },
             { text: "Play in the rain! Who needs shelter?", scores: { activity: 2, independence: 1 } }
         ]
     },
     {
         question: "You spot the campus cat feeder approaching! Time to...",
         choices: [
-            { text: "Run up to them immediately - FOOD TIME!", scores: { appetite: 2, sociability: 1 } },
+            { text: "Run up to them immediately - FOOD TIME!", scores: { appetite: 2, sociability: 2 } },
             { text: "Wait patiently in line with other cats", scores: { mood: 2, sociability: 1 } },
-            { text: "Watch from afar, you'll get food on your own terms", scores: { independence: 2, mood: 1 } },
+            { text: "Watch from afar, you'll get food on your own terms", scores: { independence: 2, mood: 2 } },
             { text: "Show off your best tricks to get extra portions", scores: { activity: 2, appetite: 1 } }
         ]
     },
@@ -104,7 +104,7 @@ const questions = [
         question: "A student tries to take a selfie with you. Your response?",
         choices: [
             { text: "Strike your best pose - you're basically a model", scores: { sociability: 2, mood: 1 } },
-            { text: "Walk away - you're not a tourist attraction", scores: { independence: 2, mood: -1 } },
+            { text: "Walk away - you're not a tourist attraction", scores: { independence: 2, mood: 2 } },
             { text: "Photobomb their picture in the most dramatic way", scores: { activity: 2, curiosity: 1 } },
             { text: "Allow it, but only if they have treats", scores: { appetite: 2, sociability: 1 } }
         ]
@@ -112,8 +112,8 @@ const questions = [
     {
         question: "You notice a new cat in your territory. What's your strategy?",
         choices: [
-            { text: "Welcome them with a friendly meow", scores: { sociability: 2, mood: 1 } },
-            { text: "Observe them from a distance first", scores: { independence: 1, curiosity: 1 } },
+            { text: "Welcome them with a friendly meow", scores: { sociability: 2, mood: 2 } },
+            { text: "Observe them from a distance first", scores: { independence: 2, curiosity: 1 } },
             { text: "Show them who's boss around here", scores: { independence: 2, activity: 1 } },
             { text: "Share your favorite spots - the more the merrier!", scores: { sociability: 2, mood: 2 } }
         ]
@@ -122,7 +122,7 @@ const questions = [
         question: "It's a quiet Sunday on campus. How do you spend your day?",
         choices: [
             { text: "Finding new spots to explore", scores: { curiosity: 2, activity: 1 } },
-            { text: "Sunbathing in your favorite window", scores: { mood: 2, independence: 1 } },
+            { text: "Sunbathing in your favorite window", scores: { mood: 2, independence: 2 } },
             { text: "Practicing your parkour skills", scores: { activity: 2, curiosity: 1 } },
             { text: "Visiting all your favorite humans' hangout spots", scores: { sociability: 2, appetite: 1 } }
         ]
@@ -130,18 +130,18 @@ const questions = [
     {
         question: "A student drops their food! Quick, what do you do?",
         choices: [
-            { text: "Help them clean up (by eating it, obviously)", scores: { appetite: 2, sociability: 1 } },
-            { text: "Watch the chaos unfold from a safe distance", scores: { independence: 2, mood: 1 } },
-            { text: "Meow sympathetically - you know the feeling", scores: { sociability: 1, mood: 2 } },
+            { text: "Help them clean up (by eating it, obviously)", scores: { appetite: 2, sociability: 2 } },
+            { text: "Watch the chaos unfold from a safe distance", scores: { independence: 2, mood: 2 } },
+            { text: "Meow sympathetically - you know the feeling", scores: { sociability: 2, mood: 2 } },
             { text: "Investigate the scene for any surviving snacks", scores: { curiosity: 2, appetite: 1 } }
         ]
     },
     {
         question: "Your favorite sleeping spot is occupied by another cat. Your next move?",
         choices: [
-            { text: "Find another spot - sharing is caring", scores: { mood: 2, sociability: 1 } },
-            { text: "Wait nearby until they leave", scores: { patience: 2, independence: 1 } },
-            { text: "Suggest a cuddle pile!", scores: { sociability: 2, mood: 1 } },
+            { text: "Find another spot - sharing is caring", scores: { mood: 2, sociability: 2 } },
+            { text: "Wait nearby until they leave", scores: { patience: 2, independence: 2 } },
+            { text: "Suggest a cuddle pile!", scores: { sociability: 2, mood: 2 } },
             { text: "Time to explore and find a new favorite spot", scores: { curiosity: 2, activity: 1 } }
         ]
     }
@@ -297,12 +297,67 @@ function updateProgress() {
     progressBar.setAttribute('aria-valuenow', Math.round(progress));
 }
 
+// 1. Map cat personalities to new images (ensure these files exist in assets/)
+const catResultImages = {
+    'The Canteen King/Queen': 'assets/DORA.png',
+    'The Library Scholar': 'assets/KURO.png',
+    'The Hall Patroller': 'assets/SMOKEY.png',
+    'The Adventure Seeker': 'assets/MIMI.png',
+    'The Sports Star': 'assets/FLYNN.png',
+    'The Garden Guardian': 'assets/ALBUS.png',
+    'The Engineering Expert': 'assets/BOOTS.png',
+    'The Business Tycoon': 'assets/SIMBA.png',
+    'The Arts Critic': 'assets/BAST.png',
+    'The Dorm Philosopher': 'assets/BANDIT.png',
+};
+
+// 2. Add splash CatQuiz.gif to start page
+function addSplashGif() {
+    let splash = document.getElementById('splash-cat-gif');
+    if (!splash) {
+        splash = document.createElement('img');
+        splash.id = 'splash-cat-gif';
+        splash.src = 'assets/CatQuiz.gif';
+        splash.alt = 'Welcome Cat';
+        splash.style.display = 'block';
+        splash.style.margin = '40px auto 32px auto';
+        splash.style.width = '420px';
+        splash.style.maxWidth = '98vw';
+        splash.style.height = 'auto';
+        splash.style.borderRadius = '24px';
+        splash.style.setProperty('box-shadow', 'none', 'important');
+        splash.style.setProperty('filter', 'none', 'important');
+        splash.style.setProperty('border', 'none', 'important');
+        splash.style.transition = 'transform 0.6s cubic-bezier(.36,1.64,.44,.99)';
+        splash.style.transform = 'scale(1.08)';
+        splash.onmouseenter = () => splash.style.transform = 'scale(1.13)';
+        splash.onmouseleave = () => splash.style.transform = 'scale(1.08)';
+        const startPage = document.getElementById('start-page');
+        startPage.insertBefore(splash, startPage.children[1]);
+    } else {
+        splash.style.setProperty('box-shadow', 'none', 'important');
+        splash.style.setProperty('filter', 'none', 'important');
+        splash.style.setProperty('border', 'none', 'important');
+        splash.style.width = '420px';
+        splash.style.maxWidth = '98vw';
+        splash.style.margin = '40px auto 32px auto';
+        splash.style.borderRadius = '24px';
+        splash.style.transition = 'transform 0.6s cubic-bezier(.36,1.64,.44,.99)';
+        splash.style.transform = 'scale(1.08)';
+        splash.onmouseenter = () => splash.style.transform = 'scale(1.13)';
+        splash.onmouseleave = () => splash.style.transform = 'scale(1.08)';
+    }
+}
+
 // Initialize quiz with enhanced animations
 document.addEventListener('DOMContentLoaded', () => {
+    addSplashGif();
     document.getElementById('start-button').addEventListener('click', () => {
         playSound('meow');
         startQuiz();
     });
+    // 4. Change all dark text to #7a0607 on load
+    setTimeout(applyDarkTextColor, 100);
 });
 
 function startQuiz() {
@@ -364,6 +419,7 @@ function handleChoice(choice) {
     }
 }
 
+// 3. Remove border and shadow from result image, and set correct image
 function showResult() {
     document.getElementById('quiz-page').style.display = 'none';
     document.getElementById('result-page').style.display = 'block';
@@ -371,15 +427,20 @@ function showResult() {
     const result = determineResult();
     playSound('purring');
     
-    // Add a fun bounce animation to the result image
     const resultImage = document.getElementById('result-image');
     resultImage.classList.add('animate__animated', 'animate__bounceIn');
-    
     document.getElementById('result-name').textContent = result.name;
     document.getElementById('result-location').textContent = result.location;
     document.getElementById('result-description').textContent = result.description;
-    resultImage.src = result.image;
+    // Use new image if available
+    resultImage.src = catResultImages[result.name] || result.image;
     resultImage.alt = `Picture of ${result.name}`;
+    // Remove border and shadow
+    resultImage.style.borderRadius = '0';
+    resultImage.style.boxShadow = 'none';
+    resultImage.style.background = 'none';
+    // 4. Change all dark text to #7a0607 on result
+    setTimeout(applyDarkTextColor, 100);
     
     // Add keyboard navigation for buttons
     const actionButtons = document.querySelectorAll('.action-buttons button');
@@ -411,6 +472,31 @@ function showResult() {
     
     // Update and display statistics with real cat data
     updateQuizStatistics(result, realCatMatch);
+}
+
+// 4. Change all dark text to #7a0607
+function applyDarkTextColor() {
+    // Main quiz text
+    const darkTextSelectors = [
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'p', '.small', '#question-text', '.stats-number', '.stats-desc', '.stats-header', '.result-content', '.credits', '.cta', '.choice-button', '.start-button', '.share-button', '.restart-button', '.cta-button', '.action-buttons button', '#result-location', '.quiz-container', '.stats-item', '.stats-grid', '.stats-header', '.stats-desc', '.result-page', '.quiz-page', '.start-page', '#choices', '#question-container', '#result-name', '#result-description', '#result-location', '#loading-text'
+    ];
+    darkTextSelectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+            el.style.color = '#7a0607';
+        });
+    });
+    // Also update inline styles for stats
+    document.querySelectorAll('.stats-number, .stats-desc, .stats-header, .result-content, .credits, .cta, .small').forEach(el => {
+        el.style.color = '#7a0607';
+    });
+    // Ensure all quiz buttons have white text
+    const buttonSelectors = ['.start-button', '.choice-button', '.share-button', '.restart-button', '.cta-button', '.action-buttons button'];
+    buttonSelectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+            el.style.setProperty('color', '#fff', 'important');
+        });
+    });
 }
 
 function determineResult() {
