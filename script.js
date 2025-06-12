@@ -349,14 +349,157 @@ function addSplashGif() {
     }
 }
 
+// Add animated paw print background
+function addPawPrintBackground() {
+    // Remove existing paw-bg if present
+    const oldBg = document.getElementById('paw-bg');
+    if (oldBg) oldBg.remove();
+
+    // Create background container
+    const pawBg = document.createElement('div');
+    pawBg.id = 'paw-bg';
+    pawBg.setAttribute('aria-hidden', 'true');
+    pawBg.setAttribute('tabindex', '-1');
+    pawBg.style.position = 'fixed';
+    pawBg.style.top = '0';
+    pawBg.style.left = '0';
+    pawBg.style.width = '100vw';
+    pawBg.style.height = '100vh';
+    pawBg.style.zIndex = '1'; // Above background, below content
+    pawBg.style.pointerEvents = 'none';
+    pawBg.style.overflow = 'hidden';
+    pawBg.style.opacity = '0.13';
+
+    // Three-toe paw print SVG (larger)
+    const pawSVG =
+        `<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="32" cy="48" rx="16" ry="10" fill="#FF9D5C"/>
+            <ellipse cx="16" cy="24" rx="6" ry="4" fill="#FF9D5C"/>
+            <ellipse cx="32" cy="16" rx="6" ry="4" fill="#FF9D5C"/>
+            <ellipse cx="48" cy="24" rx="6" ry="4" fill="#FF9D5C"/>
+        </svg>`;
+
+    // Get quiz container bounding box
+    const quiz = document.querySelector('.quiz-container');
+    let quizRect = {left: 0, right: 0, top: 0, bottom: 0};
+    if (quiz) {
+        const rect = quiz.getBoundingClientRect();
+        quizRect = {
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            bottom: rect.bottom
+        };
+    }
+
+    // Grid-based even spread
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const pawSize = 128;
+    const cols = Math.floor(vw / pawSize);
+    const rows = Math.floor(vh / pawSize);
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            // Center of this cell
+            let x = col * pawSize + pawSize / 2;
+            let y = row * pawSize + pawSize / 2;
+            // Small random offset for naturalness
+            x += (Math.random() - 0.5) * pawSize * 0.4;
+            y += (Math.random() - 0.5) * pawSize * 0.4;
+            // Skip if inside quiz container
+            if (
+                quiz &&
+                x > quizRect.left - pawSize && x < quizRect.right + pawSize &&
+                y > quizRect.top - pawSize && y < quizRect.bottom + pawSize
+            ) {
+                continue;
+            }
+            // Animate from top right to bottom left
+            const paw = document.createElement('span');
+            paw.className = 'paw-print';
+            paw.innerHTML = pawSVG;
+            // Random scale and rotation
+            const scale = 0.9 + Math.random() * 0.7;
+            const rotate = Math.random() * 360;
+            // Random animation duration and delay
+            const duration = 10 + Math.random() * 10;
+            const delay = Math.random() * 10;
+            const startX = x;
+            const startY = y;
+            const endX = x - vw * 0.4 - Math.random() * vw * 0.2;
+            const endY = y + vh * 0.4 + Math.random() * vh * 0.2;
+            paw.style.position = 'absolute';
+            paw.style.left = `${startX}px`;
+            paw.style.top = `${startY}px`;
+            paw.style.width = pawSize + 'px';
+            paw.style.height = pawSize + 'px';
+            paw.style.transform = `scale(${scale}) rotate(${rotate}deg)`;
+            paw.style.filter = 'blur(0.5px)';
+            paw.style.transition = 'opacity 0.5s';
+            paw.style.opacity = '1';
+            paw.style.animation = `pawDiagonalMove ${duration}s linear ${delay}s infinite`;
+            paw.style.setProperty('--paw-start-x', `${startX}px`);
+            paw.style.setProperty('--paw-start-y', `${startY}px`);
+            paw.style.setProperty('--paw-end-x', `${endX}px`);
+            paw.style.setProperty('--paw-end-y', `${endY}px`);
+            pawBg.appendChild(paw);
+        }
+    }
+    document.body.appendChild(pawBg);
+
+    // Add keyframes and base styles via JS
+    const style = document.createElement('style');
+    style.innerHTML = `
+        #paw-bg { pointer-events: none; z-index: 1; }
+        .paw-print svg { display: block; }
+        @keyframes pawDiagonalMove {
+            0% {
+                left: var(--paw-start-x);
+                top: var(--paw-start-y);
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                left: var(--paw-end-x);
+                top: var(--paw-end-y);
+                opacity: 0;
+            }
+        }
+        .quiz-container { position: relative; z-index: 2; }
+    `;
+    document.head.appendChild(style);
+}
+
 // Initialize quiz with enhanced animations
 document.addEventListener('DOMContentLoaded', () => {
+    preloadCatResultImages();
+    addPawPrintBackground();
     addSplashGif();
+    // Ensure quiz-container is above paw-bg and interactive, with !important
+    const quiz = document.querySelector('.quiz-container');
+    if (quiz) {
+        quiz.style.setProperty('position', 'relative', 'important');
+        quiz.style.setProperty('z-index', '10', 'important');
+    }
+    // Ensure all buttons are above paw-bg, with !important
+    document.querySelectorAll('button').forEach(btn => {
+        btn.style.setProperty('position', 'relative', 'important');
+        btn.style.setProperty('z-index', '11', 'important');
+    });
+    // Ensure paw-bg is always below, with !important
+    const pawBg = document.getElementById('paw-bg');
+    if (pawBg) {
+        pawBg.style.setProperty('z-index', '1', 'important');
+        pawBg.style.setProperty('pointer-events', 'none', 'important');
+    }
+    // Force repaint
+    void document.body.offsetHeight;
     document.getElementById('start-button').addEventListener('click', () => {
         playSound('meow');
         startQuiz();
     });
-    // 4. Change all dark text to #7a0607 on load
     setTimeout(applyDarkTextColor, 100);
 });
 
@@ -398,16 +541,140 @@ function showQuestion() {
     }, 300);
 }
 
+// 1. List of all cats
+const allCats = [
+  "The Canteen King/Queen",
+  "The Library Scholar",
+  "The Hall Patroller",
+  "The Adventure Seeker",
+  "The Sports Star",
+  "The Garden Guardian",
+  "The Engineering Expert",
+  "The Business Tycoon",
+  "The Arts Critic",
+  "The Dorm Philosopher"
+];
+
+// 2. Pathway mapping for each answer of each question
+const answerCatPools = [
+  // Q1
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Sports Star"],
+    ["The Library Scholar", "The Garden Guardian", "The Dorm Philosopher"],
+    ["The Engineering Expert", "The Business Tycoon", "The Arts Critic"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q2
+  [
+    ["The Canteen King/Queen", "The Library Scholar", "The Engineering Expert"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Dorm Philosopher"],
+    ["The Sports Star", "The Garden Guardian", "The Arts Critic"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q3
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Dorm Philosopher"],
+    ["The Library Scholar", "The Sports Star", "The Arts Critic"],
+    ["The Hall Patroller", "The Garden Guardian", "The Engineering Expert"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q4
+  [
+    ["The Canteen King/Queen", "The Library Scholar", "The Arts Critic"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Engineering Expert"],
+    ["The Sports Star", "The Garden Guardian", "The Dorm Philosopher"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q5
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Engineering Expert"],
+    ["The Library Scholar", "The Garden Guardian", "The Dorm Philosopher"],
+    ["The Hall Patroller", "The Sports Star", "The Arts Critic"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q6
+  [
+    ["The Canteen King/Queen", "The Library Scholar", "The Dorm Philosopher"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Arts Critic"],
+    ["The Sports Star", "The Garden Guardian", "The Engineering Expert"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q7
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Arts Critic"],
+    ["The Library Scholar", "The Garden Guardian", "The Engineering Expert"],
+    ["The Hall Patroller", "The Sports Star", "The Dorm Philosopher"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q8
+  [
+    ["The Canteen King/Queen", "The Library Scholar", "The Engineering Expert"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Dorm Philosopher"],
+    ["The Sports Star", "The Garden Guardian", "The Arts Critic"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q9
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Dorm Philosopher"],
+    ["The Library Scholar", "The Sports Star", "The Arts Critic"],
+    ["The Hall Patroller", "The Garden Guardian", "The Engineering Expert"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q10
+  [
+    ["The Canteen King/Queen", "The Library Scholar", "The Arts Critic"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Engineering Expert"],
+    ["The Sports Star", "The Garden Guardian", "The Dorm Philosopher"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q11
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Engineering Expert"],
+    ["The Library Scholar", "The Garden Guardian", "The Dorm Philosopher"],
+    ["The Hall Patroller", "The Sports Star", "The Arts Critic"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q12
+  [
+    ["The Canteen King/Queen", "The Library Scholar", "The Dorm Philosopher"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Arts Critic"],
+    ["The Sports Star", "The Garden Guardian", "The Engineering Expert"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q13
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Arts Critic"],
+    ["The Library Scholar", "The Garden Guardian", "The Engineering Expert"],
+    ["The Hall Patroller", "The Sports Star", "The Dorm Philosopher"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q14
+  [
+    ["The Canteen King/Queen", "The Library Scholar", "The Engineering Expert"],
+    ["The Hall Patroller", "The Adventure Seeker", "The Dorm Philosopher"],
+    ["The Sports Star", "The Garden Guardian", "The Arts Critic"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ],
+  // Q15
+  [
+    ["The Canteen King/Queen", "The Adventure Seeker", "The Dorm Philosopher"],
+    ["The Library Scholar", "The Sports Star", "The Arts Critic"],
+    ["The Hall Patroller", "The Garden Guardian", "The Engineering Expert"],
+    ["The Business Tycoon", "The Adventure Seeker", "The Arts Critic"]
+  ]
+];
+
+// 3. Track user answers as indices
+let userAnswers = [];
+
+// 4. Update handleChoice to record answer index
 function handleChoice(choice) {
     playSound('click');
-    
-    // Update scores
-    Object.entries(choice.scores).forEach(([dimension, value]) => {
-        scores[dimension] += value;
-    });
-    
+    // Record the index of the selected answer
+    const question = questions[currentQuestion];
+    const answerIdx = questions[currentQuestion].choices.findIndex(c => c === choice);
+    userAnswers.push(answerIdx);
     currentQuestion++;
-    
     if (currentQuestion < questions.length) {
         showQuestion();
     } else {
@@ -415,34 +682,67 @@ function handleChoice(choice) {
         setTimeout(() => {
             showResult();
             hideLoading();
-        }, 2000);
+        }, 400); // Reduced delay for faster result
     }
+}
+
+// 5. New result determination logic
+function determineResult() {
+    try {
+        let pool = [...allCats];
+        let lastNonEmptyPool = [...allCats];
+        for (let i = 0; i < userAnswers.length; i++) {
+            const answerIdx = userAnswers[i];
+            // Defensive: check if answerCatPools[i] and answerCatPools[i][answerIdx] exist
+            if (!answerCatPools[i] || !answerCatPools[i][answerIdx]) {
+                // If mapping is missing, break and randomize from last non-empty pool
+                break;
+            }
+            pool = pool.filter(cat => answerCatPools[i][answerIdx].includes(cat));
+            if (pool.length === 1) break;
+            if (pool.length > 0) lastNonEmptyPool = [...pool];
+        }
+        if (pool.length === 1) return catProfiles[Object.keys(catProfiles).find(key => catProfiles[key].name === pool[0])];
+        if (pool.length > 1) return catProfiles[Object.keys(catProfiles).find(key => catProfiles[key].name === pool[Math.floor(Math.random() * pool.length)])];
+        // If pool is empty, pick randomly from last non-empty pool
+        return catProfiles[Object.keys(catProfiles).find(key => catProfiles[key].name === lastNonEmptyPool[Math.floor(Math.random() * lastNonEmptyPool.length)])];
+    } catch (e) {
+        // On any error, return a random cat
+        const catNames = Object.values(catProfiles).map(c => c.name);
+        const randomName = catNames[Math.floor(Math.random() * catNames.length)];
+        return catProfiles[Object.keys(catProfiles).find(key => catProfiles[key].name === randomName)];
+    }
+}
+
+// 6. Reset userAnswers on restart
+function restartQuiz() {
+    playSound('meow');
+    userAnswers = [];
+    currentQuestion = 0;
+    document.getElementById('result-page').style.display = 'none';
+    document.getElementById('start-page').style.display = 'block';
 }
 
 // 3. Remove border and shadow from result image, and set correct image
 function showResult() {
     document.getElementById('quiz-page').style.display = 'none';
     document.getElementById('result-page').style.display = 'block';
-    
     const result = determineResult();
     playSound('purring');
-    
     const resultImage = document.getElementById('result-image');
     resultImage.classList.add('animate__animated', 'animate__bounceIn');
     document.getElementById('result-name').textContent = result.name;
     document.getElementById('result-location').textContent = result.location;
     document.getElementById('result-description').textContent = result.description;
     // Use new image if available
-    resultImage.src = catResultImages[result.name] || result.image;
+    let catImgSrc = catResultImages[result.name] || result.image;
+    resultImage.src = catImgSrc;
     resultImage.alt = `Picture of ${result.name}`;
     // Remove border and shadow
     resultImage.style.borderRadius = '0';
     resultImage.style.boxShadow = 'none';
     resultImage.style.background = 'none';
-    // 4. Change all dark text to #7a0607 on result
     setTimeout(applyDarkTextColor, 100);
-    
-    // Add keyboard navigation for buttons
     const actionButtons = document.querySelectorAll('.action-buttons button');
     actionButtons.forEach(button => {
         button.setAttribute('tabindex', '0');
@@ -453,8 +753,6 @@ function showResult() {
             }
         });
     });
-    
-    // Add confetti effect
     confetti({
         particleCount: 100,
         spread: 70,
@@ -466,11 +764,10 @@ function showResult() {
         shapes: ['circle', 'square'],
         ticks: 200
     });
-    
-    // Find the matching real cat
     const realCatMatch = findRealCatMatch(result.name);
-    
-    // Update and display statistics with real cat data
+    // Show a loading placeholder for stats with the catloading.gif
+    const statsContainer = document.getElementById('stats-container');
+    statsContainer.innerHTML = '<div style="padding:40px 0; font-size:1.1em; color:#7a0607; display:flex; flex-direction:column; align-items:center; justify-content:center;"><img src="assets/catloading.gif" alt="Loading..." style="width:64px;height:64px;display:block;margin-bottom:16px;"><span>Loading stats...</span></div>';
     updateQuizStatistics(result, realCatMatch);
 }
 
@@ -497,27 +794,6 @@ function applyDarkTextColor() {
             el.style.setProperty('color', '#fff', 'important');
         });
     });
-}
-
-function determineResult() {
-    // Find best matching cat profile based on scores
-    let bestMatch = null;
-    let highestMatch = -Infinity;
-    
-    Object.entries(catProfiles).forEach(([profile, data]) => {
-        let matchScore = 0;
-        Object.entries(data.threshold).forEach(([trait, value]) => {
-            const diff = Math.abs(scores[trait] - value);
-            matchScore -= diff; // Higher is better
-        });
-        
-        if (matchScore > highestMatch) {
-            highestMatch = matchScore;
-            bestMatch = data;
-        }
-    });
-    
-    return bestMatch;
 }
 
 // Find the matching real cat based on personality type
@@ -841,101 +1117,97 @@ function hashString(str) {
 }
 
 async function shareResult() {
-    showLoading('Preparing your result to share...');
-    
+    // Use the loading gif in the loading overlay
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        const loadingContent = overlay.querySelector('.loading-content');
+        if (loadingContent) {
+            loadingContent.innerHTML = `<img src="assets/catloading.gif" alt="Loading..." style="width:64px;height:64px;display:block;margin:0 auto 20px;">` +
+                `<p id="loading-text">Preparing your result to share...</p>`;
+        }
+    }
     try {
         // Get the result and real cat match
         const result = determineResult();
         const realCatMatch = findRealCatMatch(result.name);
-        
-        // Create a temporary container for the screenshot
+        // Get stats from the result screen if available
+        let statsText = '';
+        const statsNumber = document.querySelector('.stats-number');
+        const statsDesc = document.querySelector('.stats-desc');
+        if (statsNumber && statsDesc) {
+            statsText = `<div style='margin:12px 0 0 0; font-size:18px; color:#FF7F50; font-weight:600;'>${statsNumber.textContent}</div><div style='font-size:14px; color:#7a0607; margin-top:2px;'>${statsDesc.textContent}</div>`;
+        }
+        // Always use the correct PNG for the share image
+        let catImgSrc = catResultImages[(result.name || '').trim()] || result.image || 'assets/placeholder.png';
+        let qrImgSrc = 'assets/qrcode.png';
+        // Preload both images before rendering
+        const loadImage = src => new Promise(res => { const i = new window.Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+        const [catImg, qrImg] = await Promise.all([loadImage(catImgSrc), loadImage(qrImgSrc)]);
+        // Create a visually pleasing card layout
         const container = document.createElement('div');
         container.className = 'result-screenshot';
         container.style.cssText = `
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: 40px;
-            border-radius: 20px;
-            color: white;
-            max-width: 600px;
+            background: linear-gradient(135deg, #FFF2D8 60%, #FFB997 100%);
+            padding: 32px 20px 24px 20px;
+            border-radius: 32px;
+            color: #7a0607;
+            max-width: 420px;
+            min-width: 320px;
             text-align: center;
             position: relative;
             overflow: hidden;
-            font-family: "Quicksand", sans-serif;
+            font-family: 'Quicksand', sans-serif;
+            box-shadow: 0 8px 32px rgba(255,157,92,0.18), 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         `;
-        
-        // Add decorative elements
-        const decoration = document.createElement('div');
-        decoration.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><path d="M10,8 C8,6 8,4 10,2 C12,4 12,6 10,8 Z M10,8 C12,10 12,12 10,14 C8,12 8,10 10,8 Z M20,8 C18,6 18,4 20,2 C22,4 22,6 20,8 Z M20,8 C22,10 22,12 20,14 C18,12 18,10 20,8 Z M15,13 C13,11 13,9 15,7 C17,9 17,11 15,13 Z M15,13 C17,15 17,17 15,19 C13,17 13,15 15,13 Z" fill="rgba(255,255,255,0.1)"/></svg>');
-            opacity: 0.2;
-        `;
-        container.appendChild(decoration);
-        
-        // Add content
+        // Decorative paw print (optional)
+        container.innerHTML += `<div style='position:absolute;top:10px;left:10px;opacity:0.10;'><img src='assets/catloading.gif' style='width:36px;height:36px;'></div>`;
+        // Main content
         let contentHTML = `
-            <h2 style="font-size: 28px; margin-bottom: 20px; font-weight: 700;">My NTU Cat Personality</h2>
-            <div style="
-                background: white;
-                border-radius: 50%;
-                padding: 10px;
-                display: inline-block;
-                margin: 20px 0;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            ">
-                <img src="${document.getElementById('result-image').src}" 
-                     alt="Cat Match"
-                     style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover;">
+            <h2 style="font-size: 25px; margin-bottom: 10px; font-weight: 700; color:#FF7F50;">My NTU Cat Personality</h2>
+            <div style="display: inline-block; margin: 10px 0 8px 0;">
+                <img src="${catImg && catImg.src ? catImg.src : 'assets/placeholder.png'}" alt="Cat Match" style="width: 140px; height: 140px;">
             </div>
-            <h3 style="font-size: 24px; margin: 15px 0; font-weight: 700;">${result.name}</h3>
-            <p style="font-style: italic; margin: 10px 0;">${result.location}</p>
-            <p style="margin: 15px 0; line-height: 1.5;">${result.description}</p>
+            <h3 style="font-size: 21px; margin: 10px 0 0 0; font-weight: 700; color:#7a0607;">${result.name}</h3>
+            <p style="font-style: italic; margin: 6px 0 10px 0; color:#FF9D5C;">${result.location}</p>
+            <p style="margin: 10px 0 14px 0; line-height: 1.5; color:#7a0607;">${result.description}</p>
         `;
-        
         // Add real cat match if available
         if (realCatMatch) {
             contentHTML += `
-                <div style="
-                    margin-top: 30px;
-                    background: rgba(255,255,255,0.2);
-                    padding: 20px;
-                    border-radius: 15px;
-                ">
-                    <h3 style="font-size: 20px; margin-bottom: 15px;">My Real Cat Match: ${realCatMatch.name}</h3>
-                    <p style="margin: 10px 0; line-height: 1.5;">
-                        <strong>Find me at:</strong> ${realCatMatch.locations.join(', ')}
-                    </p>
-                    <p style="margin: 10px 0; line-height: 1.5;">
-                        <strong>Fun Fact:</strong> ${realCatMatch.funFact}
-                    </p>
+                <div style="margin: 14px 0 0 0; background: linear-gradient(90deg,#FFB997 60%,#FF9D5C 100%); padding: 12px 8px; border-radius: 16px; color: #fff;">
+                    <h4 style="font-size: 15px; margin-bottom: 4px; color:#fff;">Your Real Cat Match: ${realCatMatch.name}</h4>
+                    <div style="font-size: 12px; margin-bottom: 2px; color:#fff;">${realCatMatch.locations.join(', ')}</div>
+                    <div style="font-size: 12px; color:#fff;">${realCatMatch.funFact}</div>
                 </div>
             `;
         }
-        
-        // Add footer
+        // Add stats if available
+        if (statsText) {
+            contentHTML += `<div style='margin:14px 0 0 0;'>${statsText}</div>`;
+        }
+        // Add QR code at the bottom for sharing
         contentHTML += `
-            <div style="
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 1px solid rgba(255,255,255,0.2);
-                font-size: 14px;
-            ">
-                <p>Take the quiz at: Which NTU Cat Are You?</p>
-                <p>Created by Friday Furries x CMN</p>
+            <div style="margin-top: 16px; display: flex; flex-direction: column; align-items: center;">
+                <img src="${qrImg && qrImg.src ? qrImg.src : 'assets/placeholder.png'}" alt="Quiz QR Code" style="width: 80px; height: 80px; margin-bottom: 4px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); background: #fff;">
+                <div style="font-size: 11px; color: #FF7F50; opacity: 0.8;">Scan to take the quiz!</div>
             </div>
         `;
-        
+        // Add footer
+        contentHTML += `
+            <div style="margin-top: 16px; padding-top: 10px; border-top: 1px solid #FFB99733; font-size: 12px; color:#FF7F50;">
+                Take the quiz at: <b>Which NTU Cat Are You?</b><br>
+                Created by Friday Furries x CMN
+            </div>
+        `;
         container.innerHTML += contentHTML;
-        
         // Append to body temporarily (hidden)
         container.style.position = 'absolute';
         container.style.left = '-9999px';
         document.body.appendChild(container);
-        
         // Generate image
         const canvas = await html2canvas(container, {
             scale: 2,
@@ -943,14 +1215,8 @@ async function shareResult() {
             useCORS: true,
             allowTaint: true
         });
-        
-        // Remove temporary container
         document.body.removeChild(container);
-        
-        // Convert to blob
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        
-        // Share
         if (navigator.share && navigator.canShare({ files: [new File([blob], 'ntu-cat-quiz-result.png', { type: 'image/png' })] })) {
             await navigator.share({
                 title: 'My NTU Cat Personality',
@@ -958,7 +1224,6 @@ async function shareResult() {
                 files: [new File([blob], 'ntu-cat-quiz-result.png', { type: 'image/png' })]
             });
         } else {
-            // Fallback for browsers that don't support sharing files
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -966,24 +1231,12 @@ async function shareResult() {
             a.click();
             URL.revokeObjectURL(url);
         }
-        
-        hideLoading();
+        if (overlay) overlay.style.display = 'none';
     } catch (error) {
+        if (overlay) overlay.style.display = 'none';
         console.error('Error sharing result:', error);
-        hideLoading();
         alert('Sorry, there was an error sharing your result. Please try again.');
     }
-}
-
-function restartQuiz() {
-    playSound('meow');
-    // Reset scores
-    Object.keys(scores).forEach(key => scores[key] = 0);
-    currentQuestion = 0;
-    
-    // Show start page
-    document.getElementById('result-page').style.display = 'none';
-    document.getElementById('start-page').style.display = 'block';
 }
 
 function getFunFact(result) {
@@ -1016,4 +1269,12 @@ function getCompatibility(result) {
         'The Dorm Philosopher': 'Shares wisdom with The Library Scholar!'
     };
     return compatibility[result.name] || 'Gets along well with all campus cats!';
-} 
+}
+
+// Preload all result images for robustness
+const preloadCatResultImages = () => {
+    Object.values(catResultImages).forEach(src => {
+        const img = new window.Image();
+        img.src = src;
+    });
+}; 
