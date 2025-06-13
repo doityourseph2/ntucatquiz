@@ -743,8 +743,16 @@ function showResult() {
     resultImage.style.boxShadow = 'none';
     resultImage.style.background = 'none';
     setTimeout(applyDarkTextColor, 100);
+    // Update action buttons with icons
     const actionButtons = document.querySelectorAll('.action-buttons button');
     actionButtons.forEach(button => {
+        // Add icons only if not already present
+        if (button.id === 'share-result-btn' && !button.innerHTML.includes('📤')) {
+            button.innerHTML = button.textContent.trim() + ' <span aria-hidden="true" style="margin-left:6px;">📤</span>';
+        }
+        if (button.id === 'restart-btn' && !button.innerHTML.includes('🔄')) {
+            button.innerHTML = button.textContent.trim() + ' <span aria-hidden="true" style="margin-left:6px;">🔄</span>';
+        }
         button.setAttribute('tabindex', '0');
         button.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -769,6 +777,87 @@ function showResult() {
     const statsContainer = document.getElementById('stats-container');
     statsContainer.innerHTML = '<div style="padding:40px 0; font-size:1.1em; color:#7a0607; display:flex; flex-direction:column; align-items:center; justify-content:center;"><img src="assets/catloading.gif" alt="Loading..." style="width:64px;height:64px;display:block;margin-bottom:16px;"><span>Loading stats...</span></div>';
     updateQuizStatistics(result, realCatMatch);
+
+    // --- Cat Preview Section ---
+    let previewSection = document.getElementById('cat-preview-section');
+    if (!previewSection) {
+        previewSection = document.createElement('div');
+        previewSection.id = 'cat-preview-section';
+        previewSection.style.marginTop = '32px';
+        previewSection.style.textAlign = 'center';
+        previewSection.innerHTML = `
+            <button id="toggle-preview-btn" class="cta-button animate__animated" style="margin-bottom:18px;opacity:0;">Show All Cat Personalities <span aria-hidden="true" style="margin-left:6px;">👁️</span></button>
+            <div id="cat-preview-grid" style="display:none;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;justify-items:center;align-items:stretch;margin-top:10px;"></div>
+        `;
+        // Insert after action-buttons
+        const actionButtonsContainer = document.querySelector('.result-page .action-buttons');
+        if (actionButtonsContainer && actionButtonsContainer.parentNode) {
+            actionButtonsContainer.parentNode.insertBefore(previewSection, actionButtonsContainer.nextSibling);
+        } else {
+            document.querySelector('.result-page .result-content').appendChild(previewSection);
+        }
+        // Accessibility
+        const toggleBtn = previewSection.querySelector('#toggle-preview-btn');
+        toggleBtn.setAttribute('tabindex', '0');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.setAttribute('aria-controls', 'cat-preview-grid');
+        toggleBtn.setAttribute('aria-label', 'Show or hide all cat personalities');
+        toggleBtn.addEventListener('click', () => {
+            const grid = document.getElementById('cat-preview-grid');
+            const isOpen = grid.style.display === 'grid';
+            if (!isOpen) {
+                grid.classList.remove('animate__fadeOut');
+                grid.classList.add('animate__animated', 'animate__fadeIn');
+            } else {
+                grid.classList.remove('animate__fadeIn');
+                grid.classList.add('animate__fadeOut');
+            }
+            grid.style.display = isOpen ? 'none' : 'grid';
+            toggleBtn.textContent = isOpen ? 'Show All Cat Personalities ' : 'Hide All Cat Personalities ';
+            if (!isOpen) toggleBtn.innerHTML += '<span aria-hidden="true" style="margin-left:6px;">👁️</span>';
+            else toggleBtn.innerHTML += '<span aria-hidden="true" style="margin-left:6px;">👁️</span>';
+            toggleBtn.setAttribute('aria-expanded', !isOpen);
+        });
+    }
+    // Fill the grid
+    const grid = document.getElementById('cat-preview-grid');
+    grid.innerHTML = '';
+    grid.style.display = 'none'; // Always start hidden
+    grid.classList.remove('animate__fadeIn', 'animate__fadeOut', 'animate__animated');
+    grid.style.gridTemplateColumns = 'repeat(auto-fit,minmax(180px,1fr))';
+    grid.style.gap = '18px';
+    grid.style.justifyItems = 'center';
+    grid.style.alignItems = 'stretch';
+    Object.values(catProfiles).forEach(cat => {
+        const imgSrc = catResultImages[cat.name] || cat.image;
+        const card = document.createElement('div');
+        card.style.background = 'var(--white)';
+        card.style.borderRadius = '16px';
+        card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)';
+        card.style.padding = '18px 10px 12px 10px';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.alignItems = 'center';
+        card.style.justifyContent = 'flex-start';
+        card.style.minHeight = '260px';
+        card.style.maxWidth = '210px';
+        card.style.width = '100%';
+        card.innerHTML = `
+            <img src="${imgSrc}" alt="${cat.name}" style="width:100px;height:100px;object-fit:cover;border-radius:12px;margin-bottom:10px;">
+            <div style="font-weight:700;font-size:1.1em;color:#7a0607;margin-bottom:6px;">${cat.name}</div>
+            <div style="font-size:0.95em;color:#7a0607;opacity:0.85;margin-bottom:8px;">${cat.location}</div>
+            <div style="font-size:0.93em;color:#7a0607;opacity:0.8;">${cat.description}</div>
+        `;
+        grid.appendChild(card);
+    });
+    // Fade in the preview button after action buttons
+    setTimeout(() => {
+        const toggleBtn = document.getElementById('toggle-preview-btn');
+        if (toggleBtn) {
+            toggleBtn.style.opacity = '1';
+            toggleBtn.classList.add('animate__fadeIn');
+        }
+    }, 300);
 }
 
 // 4. Change all dark text to #7a0607
@@ -903,8 +992,8 @@ async function displayEnhancedStatistics(result, realCatMatch) {
                     </div>
                     
                     <div class="stats-item">
-                        <h4>Cat Fun Fact</h4>
-                        <p class="stats-desc">${realCatMatch.funFact}</p>
+                        <h4 style="color:#7a0607;">Cat Fun Fact</h4>
+                        <p class="stats-desc" style="color:#7a0607;">${realCatMatch.funFact}</p>
                     </div>
                 </div>
                 
@@ -950,8 +1039,8 @@ async function displayEnhancedStatistics(result, realCatMatch) {
             // Fallback if no real cat match
             statsHTML += `
                     <div class="stats-item">
-                        <h4>Fun Fact</h4>
-                        <p class="stats-desc">${getFunFact(result)}</p>
+                        <h4 style="color:#7a0607;">Fun Fact</h4>
+                        <p class="stats-desc" style="color:#7a0607;">${getFunFact(result)}</p>
                     </div>
                     
                     <div class="stats-item">

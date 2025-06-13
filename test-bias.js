@@ -248,29 +248,6 @@ const catProfiles = {
 };
 // --- END: Copied from script.js ---
 
-// --- BEGIN: Calculate average random trait scores ---
-(function() {
-  const traitSums = {
-    sociability: 0, activity: 0, independence: 0, mood: 0, curiosity: 0, appetite: 0, patience: 0
-  };
-  const NUM_AVG_SIM = 10000;
-  for (let i = 0; i < NUM_AVG_SIM; i++) {
-    const simScores = { sociability: 0, activity: 0, independence: 0, mood: 0, curiosity: 0, appetite: 0, patience: 0 };
-    for (const q of questions) {
-      const choice = q.choices[Math.floor(Math.random() * q.choices.length)];
-      for (const [trait, value] of Object.entries(choice.scores)) {
-        simScores[trait] = (simScores[trait] || 0) + value;
-      }
-    }
-    for (const trait in traitSums) traitSums[trait] += simScores[trait] || 0;
-  }
-  console.log('Average random trait scores after', NUM_AVG_SIM, 'simulations:');
-  for (const trait in traitSums) {
-    console.log(`${trait}: ${(traitSums[trait] / NUM_AVG_SIM).toFixed(2)}`);
-  }
-})();
-// --- END: Calculate average random trait scores ---
-
 const allCats = [
   "The Canteen King/Queen",
   "The Library Scholar",
@@ -393,16 +370,24 @@ const answerCatPools = [
 ];
 
 function determineResultPathway(userAnswers) {
-  let pool = [...allCats];
-  for (let i = 0; i < userAnswers.length; i++) {
-    const answerIdx = userAnswers[i];
-    pool = pool.filter(cat => answerCatPools[i][answerIdx].includes(cat));
-    if (pool.length === 1) break;
+  try {
+    let pool = [...allCats];
+    let lastNonEmptyPool = [...allCats];
+    for (let i = 0; i < userAnswers.length; i++) {
+      const answerIdx = userAnswers[i];
+      if (!answerCatPools[i] || !answerCatPools[i][answerIdx]) {
+        break;
+      }
+      pool = pool.filter(cat => answerCatPools[i][answerIdx].includes(cat));
+      if (pool.length === 1) break;
+      if (pool.length > 0) lastNonEmptyPool = [...pool];
+    }
+    if (pool.length === 1) return pool[0];
+    if (pool.length > 1) return pool[Math.floor(Math.random() * pool.length)];
+    return lastNonEmptyPool[Math.floor(Math.random() * lastNonEmptyPool.length)];
+  } catch (e) {
+    return allCats[Math.floor(Math.random() * allCats.length)];
   }
-  if (pool.length > 1) {
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
-  return pool[0];
 }
 
 // Run the simulation
