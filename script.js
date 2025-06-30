@@ -1289,7 +1289,7 @@ async function shareResult() {
         contentHTML += `
             <div style="margin-top: 16px; padding-top: 10px; border-top: 1px solid #FFB99733; font-size: 12px; color:#FF7F50;">
                 Take the quiz at: <b>Which NTU Cat Are You?</b><br>
-                Created by Friday Furries x CMN
+                Created by <a href="https://doityourseph.com" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; transition: color 0.3s ease;">@doityourseph</a>
             </div>
         `;
         container.innerHTML += contentHTML;
